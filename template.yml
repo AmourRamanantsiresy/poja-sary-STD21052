@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: poja-sary-std21052 - Computation and API
 
@@ -10,27 +10,26 @@ Globals:
     Architectures:
       - x86_64
     Timeout: 600
-    
+
     VpcConfig:
       SecurityGroupIds:
-        - !Sub '{{resolve:ssm:/poja/sg/id}}'
+        - !Sub "{{resolve:ssm:/poja/sg/id}}"
       SubnetIds:
-        - !Sub '{{resolve:ssm:/poja/subnet/private1/id}}'
-        - !Sub '{{resolve:ssm:/poja/subnet/private2/id}}'
+        - !Sub "{{resolve:ssm:/poja/subnet/private1/id}}"
+        - !Sub "{{resolve:ssm:/poja/subnet/private2/id}}"
     Environment:
       Variables:
         ENV: !Ref Env
-        AWS_SQS_QUEUE_URL: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/sqs/mailbox-queue-url}}'
-        AWS_EVENTBRIDGE_BUS: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/eventbridge/bus-name}}'
-        AWS_S3_BUCKET: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/s3/bucket-name}}'
+        AWS_SQS_QUEUE_URL: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/sqs/mailbox-queue-url}}"
+        AWS_EVENTBRIDGE_BUS: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/eventbridge/bus-name}}"
+        AWS_S3_BUCKET: !Sub "{{resolve:ssm:/poja-sary-std21038/${Env}/s3/bucket-name}}"
         AWS_SES_SOURCE: noreply@nowhere.com
         DRIVERCLASSNAME: org.sqlite.JDBC
         SPRING_JPA_DATABASEPLATFORM: org.hibernate.community.dialect.SQLiteDialect
         DATABASE_URL: jdbc:sqlite:/mnt/efs/sqlite-data:db?cache=shared
         DATABASE_USERNAME: sa
         DATABASE_PASSWORD: sa
-        
-        
+
         JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dspring.main.lazy-initialization=true -Dspring.data.jpa.repositories.bootstrap-mode=lazy -Dspring.datasource.max-active=5 -Dspring.datasource.max-idle=1 -Dspring.datasource.min-idle=1 -Dspring.datasource.initial-size=1
 
 Parameters:
@@ -50,9 +49,9 @@ Resources:
     Properties:
       Handler: school.hei.sary.ApiEventHandler::handleRequest
       MemorySize: 512
-      Role: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/execution/role-arn}}'
+      Role: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/execution/role-arn}}"
       FileSystemConfigs:
-        - Arn: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/efs/access-point/arn}}'
+        - Arn: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/efs/access-point/arn}}"
           LocalMountPath: /mnt/efs
       Events:
         ApiCall:
@@ -68,15 +67,15 @@ Resources:
     Properties:
       Handler: school.hei.sary.MailboxEventHandler::handleRequest
       MemorySize: 512
-      Role: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/execution/role-arn}}'
+      Role: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/execution/role-arn}}"
       FileSystemConfigs:
-        - Arn: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/efs/access-point/arn}}'
+        - Arn: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/efs/access-point/arn}}"
           LocalMountPath: /mnt/efs
       Events:
         AllEvents:
           Type: SQS
           Properties:
-            Queue: !Sub '{{resolve:ssm:/poja-sary-std21052/${Env}/sqs/mailbox-queue-arn}}'
+            Queue: !Sub "{{resolve:ssm:/poja-sary-std21052/${Env}/sqs/mailbox-queue-arn}}"
             BatchSize: 5
 
   ApplicationResourceGroup:
@@ -90,12 +89,12 @@ Resources:
     Type: AWS::ApplicationInsights::Application
     Properties:
       ResourceGroupName: !Ref ApplicationResourceGroup
-      AutoConfigurationEnabled: 'true'
+      AutoConfigurationEnabled: "true"
 
   ApiUrlSSM:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Join [ '', [ /poja-sary-std21052/, !Ref Env, /api/url ] ]
+      Name: !Join ["", [/poja-sary-std21052/, !Ref Env, /api/url]]
       Type: String
       Value: !Sub "https://${FrontalServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
 
